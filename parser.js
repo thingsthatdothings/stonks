@@ -404,11 +404,19 @@ export function parse(html, security) {
     null;
   const { low: volumeLow52w, high: volumeHigh52w } = parseVolumeRange(volRange52wStr);
 
+  const divRaw =
+    findStat(doc, 'Dividend') ||
+    findStat(doc, 'Dividend Yield') ||
+    findStat(doc, 'Div Yield') ||
+    null;
+  // Value is like "4.32 (3.36%)" — extract the % inside parentheses
+  const divMatch = divRaw ? divRaw.match(/\(([0-9.]+)%\)/) : null;
+  const dividendYield = divMatch ? parseNum(divMatch[1]) : parseNum(divRaw ? divRaw.replace('%', '') : null);
+
   // ── Type-specific fields ───────────────────────────────────────────────────
 
   let stockFields = {
     marketCap: null,
-    dividendYield: null,
     exDivDate: null,
     earningsDate: null,
   };
@@ -417,10 +425,11 @@ export function parse(html, security) {
     mer: null,
     inception: null,
     assets: null,
-    returns: {
-      '5d': null, '1m': null, '3m': null, '6m': null,
-      '1y': null, '3y': null, '5y': null, '10y': null,
-    },
+  };
+
+  let returns = {
+    '5d': null, '1m': null, '3m': null, '6m': null,
+    '1y': null, '3y': null, '5y': null, '10y': null,
   };
 
   if (security.type === 'stock') {
@@ -429,15 +438,6 @@ export function parse(html, security) {
       findStat(doc, 'Mkt Cap') ||
       null;
     stockFields.marketCap = parseSuffixedNumber(marketCapStr);
-
-    const divRaw =
-      findStat(doc, 'Dividend') ||
-      findStat(doc, 'Dividend Yield') ||
-      findStat(doc, 'Div Yield') ||
-      null;
-    // Value is like "4.32 (3.36%)" — extract the % inside parentheses
-    const divMatch = divRaw ? divRaw.match(/\(([0-9.]+)%\)/) : null;
-    stockFields.dividendYield = divMatch ? parseNum(divMatch[1]) : parseNum(divRaw ? divRaw.replace('%', '') : null);
 
     stockFields.exDivDate = parseStr(
       findStat(doc, 'Ex-Dividend Date') ||
@@ -469,21 +469,6 @@ export function parse(html, security) {
       findStat(doc, 'Assets') ||
       null;
     etfFields.assets = parseSuffixedNumber(assetsStr);
-
-    // Trailing returns — parse from Highcharts bar chart aria-labels
-    // e.g. aria-label="1 Year, 9.422. VFV."
-    const chartReturns = parseChartReturns(doc);
-    etfFields.returns = {
-      '5d':  null,
-      '1m':  chartReturns['1 Month']  ?? parseReturnValue(doc, ['1M', '1 Month', '1-Month', '1 Mo']),
-      '3m':  null,
-      '6m':  null,
-      '1y':  chartReturns['1 Year']   ?? parseReturnValue(doc, ['1-Year Return', '1Y', '1 Year', '1-Year', '1 Yr']),
-      '3y':  null,
-      '5y':  chartReturns['5 Years']  ?? parseReturnValue(doc, ['5-Year Return', '5Y', '5 Year', '5-Year', '5 Yr']),
-      '10y': chartReturns['10 Years'] ?? parseReturnValue(doc, ['10-Year Return', '10Y', '10 Year', '10-Year', '10 Yr']),
-    };
-    console.debug('[parser] etfFields.returns:', etfFields.returns);
   }
 
   return {
@@ -501,16 +486,56 @@ export function parse(html, security) {
     volumeHigh52w,
     // stock fields (null for ETFs)
     marketCap: security.type === 'stock' ? stockFields.marketCap : null,
-    dividendYield: security.type === 'stock' ? stockFields.dividendYield : null,
+    dividendYield,
     exDivDate: security.type === 'stock' ? stockFields.exDivDate : null,
     earningsDate: security.type === 'stock' ? stockFields.earningsDate : null,
     // ETF fields (null for stocks)
     mer: security.type === 'etf' ? etfFields.mer : null,
     inception: security.type === 'etf' ? etfFields.inception : null,
     assets: security.type === 'etf' ? etfFields.assets : null,
-    returns: security.type === 'etf' ? etfFields.returns : null,
+    returns: returns,
     error: null,
   };
+}
+
+/**
+ * Parse TradingView HTML for trailing returns.
+ * @param {string} html
+ */
+export function parseTradingViewReturns(html) {
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const map = {
+      '5d': '5D', '1m': '1M', '3m': '3M', '6m': '6M',
+      '1y': '12M', '3y': '36M', '5y': '60M', '10y': '120M'
+    };
+    const returns = {};
+    let foundAny = false;
+
+    for (const [key, id] of Object.entries(map)) {
+      returns[key] = null;
+      const btn = doc.querySelector(`button[data-qa-id="time-range-button-${id}"]`);
+      if (btn) {
+        const spans = btn.querySelectorAll('span');
+        for (const span of spans) {
+          if (span.className && typeof span.className === 'string' && span.className.includes('change-')) {
+            let val = span.textContent.trim().replace('−', '-').replace('%', '').trim();
+            val = val.replace(/,/g, '');
+            let n = parseFloat(val);
+            if (!isNaN(n)) {
+              if (val.toUpperCase().includes('K')) n *= 1000;
+              returns[key] = n;
+              foundAny = true;
+            }
+            break;
+          }
+        }
+      }
+    }
+    return foundAny ? returns : null;
+  } catch (e) {
+    return null;
+  }
 }
 
 /**
@@ -580,7 +605,7 @@ function buildEmpty(security) {
     mer: null,
     inception: null,
     assets: null,
-    returns: null,
+    returns: { '5d': null, '1m': null, '3m': null, '6m': null, '1y': null, '3y': null, '5y': null, '10y': null },
     error: null,
   };
 }

@@ -2,7 +2,7 @@
  * fetcher.js — URL building, CORS proxy fetching, and progressive load orchestration
  */
 
-import { parse } from './parser.js';
+import { parse, parseTradingViewReturns } from './parser.js';
 
 const CORS_PROXY = 'https://corsproxy.io/?url=';
 const BASE = 'https://stockanalysis.com';
@@ -38,6 +38,23 @@ function buildStatsUrl(security) {
 }
 
 /**
+ * Get potential TradingView URLs for a security.
+ * @param {{ type: string, exchange?: string, symbol: string }} security
+ * @returns {string[]}
+ */
+function getTradingViewUrls(security) {
+  const sym = security.symbol.toUpperCase();
+  if (security.exchange === 'tsx') {
+    return [`${CORS_PROXY}https://www.tradingview.com/symbols/TSX-${sym}/`];
+  }
+  return [
+    `${CORS_PROXY}https://www.tradingview.com/symbols/NASDAQ-${sym}/`,
+    `${CORS_PROXY}https://www.tradingview.com/symbols/NYSE-${sym}/`,
+    `${CORS_PROXY}https://www.tradingview.com/symbols/AMEX-${sym}/`
+  ];
+}
+
+/**
  * Fetch data for a single security.
  * For US stocks, also fetches the /statistics/ page to get Average Volume.
  * Returns null on any error.
@@ -52,6 +69,24 @@ export async function fetchSecurity(security) {
     const html = await response.text();
     const data = parse(html, security);
     if (data === null) return null;
+
+    // Fetch TradingView returns
+    const tvUrls = getTradingViewUrls(security);
+    for (const tvUrl of tvUrls) {
+      try {
+        const tvRes = await fetch(tvUrl);
+        if (tvRes.ok) {
+          const tvHtml = await tvRes.text();
+          const tvReturns = parseTradingViewReturns(tvHtml);
+          if (tvReturns) {
+            data.returns = tvReturns;
+            break;
+          }
+        }
+      } catch {
+        // ignore and try next url
+      }
+    }
 
     // For US stocks, fetch the statistics page to get Average Volume
     const statsUrl = buildStatsUrl(security);

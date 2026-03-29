@@ -14,11 +14,9 @@ import { showSuccess, showWarning, showError } from './toast.js';
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 
-const skeletonEl    = document.getElementById('skeleton-loader');
+
 const gridContainer = document.getElementById('grid-container');
-const errorStateEl  = document.getElementById('error-state');
 const btnRefresh    = document.getElementById('btn-refresh');
-const btnRetry      = document.getElementById('btn-retry');
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
@@ -27,22 +25,12 @@ let grid = null;
 
 // ── UI helpers ────────────────────────────────────────────────────────────────
 
-function showSkeleton() {
-  skeletonEl.hidden    = false;
+function showLoading() {
   gridContainer.hidden = true;
-  errorStateEl.hidden  = true;
 }
 
 function showGrid() {
-  skeletonEl.hidden    = true;
   gridContainer.hidden = false;
-  errorStateEl.hidden  = true;
-}
-
-function showErrorState() {
-  skeletonEl.hidden    = true;
-  gridContainer.hidden = true;
-  errorStateEl.hidden  = false;
 }
 
 // ── Load logic ────────────────────────────────────────────────────────────────
@@ -51,7 +39,7 @@ function showErrorState() {
  * Initialise (or re-initialise) the grid and start fetching all securities.
  */
 async function load() {
-  showSkeleton();
+  showLoading();
 
   // Re-create the grid so the container is clean on refresh/retry
   gridContainer.innerHTML = '';
@@ -87,8 +75,7 @@ async function load() {
       } else if (loaded > 0) {
         showWarning(`Loaded ${loaded}/${total} securities — some failed to load`);
       } else {
-        // All failed — show the error state with a Retry button
-        showErrorState();
+        // All failed — show the toast
         showError('Failed to load securities data');
       }
     },
@@ -98,10 +85,6 @@ async function load() {
 // ── Button wiring ─────────────────────────────────────────────────────────────
 
 btnRefresh.addEventListener('click', () => {
-  load();
-});
-
-btnRetry.addEventListener('click', () => {
   load();
 });
 

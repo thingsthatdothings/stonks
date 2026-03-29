@@ -14,61 +14,98 @@ import { renderPriceGauge, renderVolumeRatioGauge } from './gauge.js';
  * @typedef {{ key: string, label: string, type: 'common'|'stock'|'etf', width: number, render?: function }} ColDef
  */
 
+const renderReturn = v => {
+  if (v == null || isNaN(v)) return '<span>—</span>';
+  const cls = v >= 0 ? 'change-positive' : 'change-negative';
+  return `<span class="${cls}">${formatPercent(v)}</span>`;
+};
+
 /** @type {ColDef[]} */
 const COLUMNS = [
   // Common columns
-  { key: 'symbol',      label: 'Symbol',       type: 'common', width: 80 },
-  { key: 'name',        label: 'Name',         type: 'common', width: 160 },
-  { key: 'industry',    label: 'Industry',     type: 'common', width: 140 },
-  { key: 'price',       label: 'Price',        type: 'common', width: 80,
-    render: r => formatPrice(r.price) },
-  { key: 'change',      label: 'Change %',     type: 'common', width: 90,
-    render: r => {
-      const v = r.change;
-      if (v == null || isNaN(v)) return '<span>—</span>';
-      const cls = v >= 0 ? 'change-positive' : 'change-negative';
-      return `<span class="${cls}">${formatPercent(v)}</span>`;
-    }
+  { key: 'id', label: 'ID', type: 'common', width: 50 },
+  { key: 'symbol', label: 'Symbol', type: 'common', width: 80 },
+  { key: 'name', label: 'Name', type: 'common', width: 160 },
+  { key: 'industry', label: 'Industry', type: 'common', width: 140 },
+  {
+    key: 'price', label: 'Price', type: 'common', width: 80,
+    render: r => formatPrice(r.price)
   },
-  { key: 'priceGauge',  label: 'Price 52W',    type: 'common', width: 120,
-    render: r => renderPriceGauge(r.price, r.low52w, r.high52w) },
-  { key: 'low52w',      label: '52W Low',      type: 'common', width: 80,
-    render: r => formatPrice(r.low52w) },
-  { key: 'high52w',     label: '52W High',     type: 'common', width: 80,
-    render: r => formatPrice(r.high52w) },
-  { key: 'volumeGauge', label: 'Volume',       type: 'common', width: 120,
-    render: r => renderVolumeRatioGauge(r.volume, r.avgVolume) },
+  {
+    key: 'change', label: 'Change %', type: 'common', width: 90,
+    render: r => renderReturn(r.change)
+  },
+  {
+    key: 'priceGauge', label: 'Price 52W', type: 'common', width: 120,
+    render: r => renderPriceGauge(r.price, r.low52w, r.high52w)
+  },
+  {
+    key: 'low52w', label: '52W Low', type: 'common', width: 80,
+    render: r => formatPrice(r.low52w)
+  },
+  {
+    key: 'high52w', label: '52W High', type: 'common', width: 80,
+    render: r => formatPrice(r.high52w)
+  },
+  {
+    key: 'volumeGauge', label: 'Volume', type: 'common', width: 120,
+    render: r => renderVolumeRatioGauge(r.volume, r.avgVolume)
+  },
 
   // Stock-only columns
-  { key: 'marketCap',     label: 'Market Cap',    type: 'stock', width: 100,
-    render: r => formatLargeNumber(r.marketCap) },
-  { key: 'dividendYield', label: 'Div Yield',     type: 'stock', width: 90,
-    render: r => formatPercent(r.dividendYield) },
-  { key: 'exDivDate',     label: 'Ex-Div Date',   type: 'stock', width: 100 },
-  { key: 'earningsDate',  label: 'Earnings Date', type: 'stock', width: 110 },
+  {
+    key: 'marketCap', label: 'Market Cap', type: 'stock', width: 100,
+    render: r => formatLargeNumber(r.marketCap)
+  },
+  {
+    key: 'dividendYield', label: 'Div Yield', type: 'common', width: 90,
+    render: r => formatPercent(r.dividendYield)
+  },
+  { key: 'exDivDate', label: 'Ex-Div Date', type: 'stock', width: 100 },
+  { key: 'earningsDate', label: 'Earnings Date', type: 'stock', width: 110 },
 
   // ETF-only columns
-  { key: 'mer',       label: 'MER',       type: 'etf', width: 70,
-    render: r => formatPercent(r.mer) },
+  {
+    key: 'mer', label: 'MER', type: 'etf', width: 70,
+    render: r => formatPercent(r.mer)
+  },
   { key: 'inception', label: 'Inception', type: 'etf', width: 100 },
-  { key: 'assets',    label: 'Assets',    type: 'etf', width: 90,
-    render: r => formatLargeNumber(r.assets) },
-  { key: 'ret5d',  label: '5D',  type: 'etf', width: 65,
-    render: r => formatPercent(r.returns?.['5d']) },
-  { key: 'ret1m',  label: '1M',  type: 'etf', width: 65,
-    render: r => formatPercent(r.returns?.['1m']) },
-  { key: 'ret3m',  label: '3M',  type: 'etf', width: 65,
-    render: r => formatPercent(r.returns?.['3m']) },
-  { key: 'ret6m',  label: '6M',  type: 'etf', width: 65,
-    render: r => formatPercent(r.returns?.['6m']) },
-  { key: 'ret1y',  label: '1Y',  type: 'etf', width: 65,
-    render: r => formatPercent(r.returns?.['1y']) },
-  { key: 'ret3y',  label: '3Y',  type: 'etf', width: 65,
-    render: r => formatPercent(r.returns?.['3y']) },
-  { key: 'ret5y',  label: '5Y',  type: 'etf', width: 65,
-    render: r => formatPercent(r.returns?.['5y']) },
-  { key: 'ret10y', label: '10Y', type: 'etf', width: 65,
-    render: r => formatPercent(r.returns?.['10y']) },
+  {
+    key: 'assets', label: 'Assets', type: 'etf', width: 90,
+    render: r => formatLargeNumber(r.assets)
+  },
+  {
+    key: 'ret5d', label: '5D', type: 'common', width: 65,
+    render: r => renderReturn(r.returns?.['5d'])
+  },
+  {
+    key: 'ret1m', label: '1M', type: 'common', width: 65,
+    render: r => renderReturn(r.returns?.['1m'])
+  },
+  {
+    key: 'ret3m', label: '3M', type: 'common', width: 65,
+    render: r => renderReturn(r.returns?.['3m'])
+  },
+  {
+    key: 'ret6m', label: '6M', type: 'common', width: 65,
+    render: r => renderReturn(r.returns?.['6m'])
+  },
+  {
+    key: 'ret1y', label: '1Y', type: 'common', width: 65,
+    render: r => renderReturn(r.returns?.['1y'])
+  },
+  {
+    key: 'ret3y', label: '3Y', type: 'common', width: 65,
+    render: r => renderReturn(r.returns?.['3y'])
+  },
+  {
+    key: 'ret5y', label: '5Y', type: 'common', width: 65,
+    render: r => renderReturn(r.returns?.['5y'])
+  },
+  {
+    key: 'ret10y', label: '10Y', type: 'common', width: 65,
+    render: r => renderReturn(r.returns?.['10y'])
+  },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -81,15 +118,15 @@ const COLUMNS = [
  */
 function sortValue(row, key) {
   switch (key) {
-    case 'priceGauge':  return row.price;
+    case 'priceGauge': return row.price;
     case 'volumeGauge': return row.volume;
-    case 'ret5d':  return row.returns?.['5d']  ?? null;
-    case 'ret1m':  return row.returns?.['1m']  ?? null;
-    case 'ret3m':  return row.returns?.['3m']  ?? null;
-    case 'ret6m':  return row.returns?.['6m']  ?? null;
-    case 'ret1y':  return row.returns?.['1y']  ?? null;
-    case 'ret3y':  return row.returns?.['3y']  ?? null;
-    case 'ret5y':  return row.returns?.['5y']  ?? null;
+    case 'ret5d': return row.returns?.['5d'] ?? null;
+    case 'ret1m': return row.returns?.['1m'] ?? null;
+    case 'ret3m': return row.returns?.['3m'] ?? null;
+    case 'ret6m': return row.returns?.['6m'] ?? null;
+    case 'ret1y': return row.returns?.['1y'] ?? null;
+    case 'ret3y': return row.returns?.['3y'] ?? null;
+    case 'ret5y': return row.returns?.['5y'] ?? null;
     case 'ret10y': return row.returns?.['10y'] ?? null;
     default: return row[key] ?? null;
   }
@@ -134,7 +171,7 @@ function cmp(a, b, dir) {
 function renderCell(col, row) {
   if (row.error) return col.key === 'symbol' ? `<span>${row.symbol ?? '?'}</span>` : '';
   if (col.type === 'stock' && row._secType !== 'stock') return '';
-  if (col.type === 'etf'   && row._secType !== 'etf')   return '';
+  if (col.type === 'etf' && row._secType !== 'etf') return '';
   if (col.render) return col.render(row);
   const v = row[col.key];
   return v != null ? String(v) : '—';
@@ -156,7 +193,7 @@ export function initGrid(container, initialRows = []) {
   let sortDir = 'asc';
   let filters = {};   // { [colKey]: string }
   let page = 1;
-  let pageSize = 10;
+  let pageSize = 100;
   let colWidths = {};  // { [colKey]: number }
 
   // Initialise column widths from defaults
@@ -353,7 +390,7 @@ export function initGrid(container, initialRows = []) {
 
     const select = document.createElement('select');
     select.setAttribute('aria-label', 'Rows per page');
-    [5, 10, 25, 50].forEach(n => {
+    [25, 50, 100].forEach(n => {
       const opt = document.createElement('option');
       opt.value = n;
       opt.textContent = n;
@@ -447,9 +484,9 @@ export function initGrid(container, initialRows = []) {
  */
 function normalise(row) {
   // Infer security type: if it has ETF-specific fields it's an ETF, else stock
-  const isEtf = row.mer != null || row.inception != null || row.assets != null || row.returns != null;
-  const isStock = row.marketCap != null || row.dividendYield != null ||
-                  row.exDivDate != null || row.earningsDate != null;
+  const isEtf = row.mer != null || row.inception != null || row.assets != null;
+  const isStock = row.marketCap != null ||
+    row.exDivDate != null || row.earningsDate != null;
 
   let secType = 'stock'; // default
   if (isEtf && !isStock) secType = 'etf';
