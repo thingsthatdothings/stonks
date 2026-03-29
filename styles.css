@@ -1,0 +1,313 @@
+/* ============================================================
+   Base styles
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  background: #0f1117;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   Header
+   ============================================================ */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #1a1d27;
+  border-bottom: 1px solid #2d3148;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #a5b4fc;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+
+.btn-refresh {
+  background: #3b4fd8;
+  color: #fff;
+}
+.btn-refresh:hover { background: #4f63e8; }
+
+.btn-retry {
+  background: #c0392b;
+  color: #fff;
+  margin-top: 12px;
+}
+.btn-retry:hover { background: #e74c3c; }
+
+/* ============================================================
+   Main layout
+   ============================================================ */
+.app-main {
+  padding: 20px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* ============================================================
+   Skeleton loader
+   ============================================================ */
+.skeleton-loader {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-row {
+  height: 40px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #1e2130 25%, #2a2f45 50%, #1e2130 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ============================================================
+   Error state
+   ============================================================ */
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.error-message {
+  color: #fc8181;
+  font-size: 15px;
+}
+
+/* ============================================================
+   Grid styles
+   ============================================================ */
+.grid-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.grid-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.grid-table th,
+.grid-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #2d3148;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.grid-table thead tr:first-child th {
+  background: #1a1d27;
+  font-weight: 600;
+  color: #a5b4fc;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.grid-table thead tr:first-child th:hover {
+  background: #22263a;
+}
+
+/* Sort indicator */
+.sort-asc::after  { content: ' ▲'; font-size: 10px; }
+.sort-desc::after { content: ' ▼'; font-size: 10px; }
+
+/* Filter row */
+.grid-table thead tr.filter-row th {
+  background: #13151f;
+  padding: 4px 6px;
+  cursor: default;
+}
+
+.grid-filter-input {
+  width: 100%;
+  background: #1e2130;
+  border: 1px solid #2d3148;
+  border-radius: 4px;
+  color: #e2e8f0;
+  font-size: 12px;
+  padding: 3px 6px;
+  outline: none;
+}
+.grid-filter-input:focus { border-color: #4f63e8; }
+
+/* Column resize handle */
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+}
+.resize-handle:hover { background: #4f63e8; }
+
+/* Row colours */
+.grid-table tbody tr:hover { background: #1e2130; }
+
+.grid-table tbody tr.row-error td { color: #fc8181; font-style: italic; }
+
+/* Change % colour coding */
+.change-positive { color: #68d391; }
+.change-negative { color: #fc8181; }
+
+/* Pagination */
+.grid-pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.grid-pagination button {
+  background: #1e2130;
+  border: 1px solid #2d3148;
+  color: #e2e8f0;
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.grid-pagination button:disabled { opacity: 0.4; cursor: default; }
+.grid-pagination button:not(:disabled):hover { background: #2a2f45; }
+
+.grid-pagination select {
+  background: #1e2130;
+  border: 1px solid #2d3148;
+  color: #e2e8f0;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 13px;
+}
+
+/* ============================================================
+   Gauge styles
+   ============================================================ */
+.gauge-wrap {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  min-width: 80px;
+}
+
+.gauge-track {
+  width: 100%;
+  height: 8px;
+  background: #2d3148;
+  border-radius: 4px;
+  overflow: visible;
+  position: relative;
+}
+
+.gauge-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Price gauge colours */
+.gauge-green  { background: #48bb78; }
+.gauge-amber  { background: #ecc94b; }
+.gauge-red    { background: #fc8181; }
+
+/* Volume gauge */
+.gauge-blue   { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+
+/* Tooltip */
+.gauge-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1d27;
+  border: 1px solid #2d3148;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  white-space: nowrap;
+  color: #e2e8f0;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.gauge-wrap:hover .gauge-tooltip { display: block; }
+
+/* ============================================================
+   Toast styles
+   ============================================================ */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 220px;
+  max-width: 360px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  animation: toast-in 0.25s ease;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.toast-success { background: #276749; color: #c6f6d5; }
+.toast-warning { background: #744210; color: #fefcbf; }
+.toast-error   { background: #742a2a; color: #fed7d7; }
+
+.toast-icon { font-size: 16px; }

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Screener</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <h1 class="app-title">Stock Screener</h1>
+    <button id="btn-refresh" class="btn btn-refresh" type="button">&#x21bb; Refresh</button>
+  </header>
+
+  <!-- Main content -->
+  <main class="app-main">
+    <!-- Skeleton loader (shown while fetching) -->
+    <div id="skeleton-loader" class="skeleton-loader" aria-label="Loading data" role="status">
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
+    </div>
+
+    <!-- Grid container (populated by grid.js) -->
+    <div id="grid-container" class="grid-container" hidden></div>
+
+    <!-- Error state (shown when all fetches fail) -->
+    <div id="error-state" class="error-state" hidden>
+      <p class="error-message">Failed to load securities data.</p>
+      <button id="btn-retry" class="btn btn-retry" type="button">Retry</button>
+    </div>
+  </main>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
