@@ -56,6 +56,7 @@ async function load() {
       if (gridContainer.hidden) showGrid();
 
       if (result !== null) {
+        result.exchange = security.exchange;
         grid.addRow(result);
       } else {
         grid.setError(security.id);

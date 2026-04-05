@@ -203,9 +203,10 @@ export function initGrid(container, initialRows = []) {
 
   const wrapper = document.createElement('div');
   wrapper.className = 'grid-wrapper';
+  wrapper.style.setProperty('--col-0-width', colWidths[COLUMNS[0].key] + 'px');
 
   const tableWrap = document.createElement('div');
-  tableWrap.style.overflowX = 'auto';
+  tableWrap.className = 'grid-table-wrap';
 
   const table = document.createElement('table');
   table.className = 'grid-table';
@@ -303,6 +304,9 @@ export function initGrid(container, initialRows = []) {
         colWidths[key] = newW;
         th.style.width = newW + 'px';
         th.style.minWidth = newW + 'px';
+        if (key === COLUMNS[0].key) {
+          wrapper.style.setProperty('--col-0-width', newW + 'px');
+        }
       }
 
       function onUp() {
@@ -347,6 +351,9 @@ export function initGrid(container, initialRows = []) {
     const start = (page - 1) * pageSize;
     const pageRows = filtered.slice(start, start + pageSize);
 
+    // Update header height variable for sticky positioning
+    wrapper.style.setProperty('--header-height', headerRow.offsetHeight + 'px');
+
     // Update sort indicators on header
     headerRow.querySelectorAll('th').forEach(th => {
       const key = th.dataset.key;
@@ -369,6 +376,20 @@ export function initGrid(container, initialRows = []) {
         const td = document.createElement('td');
         td.innerHTML = renderCell(col, row);
         tr.appendChild(td);
+      });
+
+      tr.addEventListener('dblclick', () => {
+        if (!row.symbol) return;
+        let url;
+        if (row.exchange && row.exchange.toLowerCase() === 'tsx') {
+          const cleanSymbol = row.symbol.toUpperCase().replace(/\./g, '-');
+          url = `https://stockanalysis.com/quote/tsx/${cleanSymbol}/`;
+        } else {
+          const typePath = row._secType === 'etf' ? 'etf' : 'stocks';
+          const cleanSymbol = row.symbol.toLowerCase().replace(/\./g, '-');
+          url = `https://stockanalysis.com/${typePath}/${cleanSymbol}/`;
+        }
+        window.open(url, '_blank');
       });
 
       tbody.appendChild(tr);

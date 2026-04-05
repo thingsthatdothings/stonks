@@ -12,7 +12,11 @@ body {
   font-size: 14px;
   background: #0f1117;
   color: #e2e8f0;
-  min-height: 100vh;
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* ============================================================
@@ -62,25 +66,41 @@ body {
    ============================================================ */
 .app-main {
   padding: 20px;
-  max-width: 100%;
-  overflow-x: auto;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
-
-
-
-
 
 /* ============================================================
    Grid styles
    ============================================================ */
 .grid-container {
   width: 100%;
-  overflow-x: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.grid-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.grid-table-wrap {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
 }
 
 .grid-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   table-layout: fixed;
 }
 
@@ -100,7 +120,9 @@ body {
   color: #a5b4fc;
   cursor: pointer;
   user-select: none;
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .grid-table thead tr:first-child th:hover {
@@ -116,6 +138,9 @@ body {
   background: #13151f;
   padding: 4px 6px;
   cursor: default;
+  position: sticky;
+  top: var(--header-height, 37px);
+  z-index: 10;
 }
 
 .grid-filter-input {
@@ -142,8 +167,48 @@ body {
 }
 .resize-handle:hover { background: #4f63e8; }
 
+/* Frozen columns */
+.grid-table th:nth-child(1),
+.grid-table td:nth-child(1) {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+.grid-table th:nth-child(2),
+.grid-table td:nth-child(2) {
+  position: sticky;
+  left: var(--col-0-width, 50px);
+  z-index: 2;
+}
+
+/* Ensure background colours are set correctly for sticky cells to cover scrolling content */
+.grid-table thead tr:first-child th:nth-child(1),
+.grid-table thead tr:first-child th:nth-child(2) {
+  background: #1a1d27;
+  z-index: 30; /* Higher than regular sticky headers */
+}
+.grid-table thead tr:first-child th:nth-child(1):hover,
+.grid-table thead tr:first-child th:nth-child(2):hover {
+  background: #22263a;
+}
+.grid-table thead tr.filter-row th:nth-child(1),
+.grid-table thead tr.filter-row th:nth-child(2) {
+  background: #13151f;
+  z-index: 30;
+}
+.grid-table tbody td:nth-child(1),
+.grid-table tbody td:nth-child(2) {
+  background: #0f1117;
+}
+
 /* Row colours */
-.grid-table tbody tr:hover { background: #1e2130; }
+.grid-table tbody tr:hover td { background: #1e2130; }
+
+.grid-table tbody tr:hover td:nth-child(1),
+.grid-table tbody tr:hover td:nth-child(2) {
+  background: #1e2130;
+}
 
 .grid-table tbody tr.row-error td { color: #fc8181; font-style: italic; }
 
